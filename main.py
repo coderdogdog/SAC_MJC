@@ -31,7 +31,10 @@ def Action_adapter_reverse(a, max_action=0.4):
 def evaluate_policy(name_env, model, max_action, test_num=3, xr=False):
     scores = 0
     turns = test_num
-    env1 = gym.make(name_env, render_mode="rgb_array")
+    if xr:
+        env1 = gym.make(name_env, render_mode="human")
+    else:
+        env1 = gym.make(name_env, render_mode="rgb_array")
     env1 = env1.unwrapped  # 不可或缺
 
     for j in range(turns):
@@ -41,7 +44,8 @@ def evaluate_policy(name_env, model, max_action, test_num=3, xr=False):
             # Take deterministic actions at test time
             a = model.select_action(s, deterministic=True)
             act = Action_adapter(a, max_action)     # [0,1] to [-max,max]
-            s_prime, r, done, _, _ = env1.step(act)
+            s_prime, r, termi, trun, _ = env1.step(act)
+            done = termi | trun
             ep_r += r
             s = s_prime
             if xr:
@@ -124,6 +128,7 @@ def main():
     replay_buffer = RandomBuffer(state_dim, action_dim, True)
 
     if not is_train:
+        env.close()
         average_reward = evaluate_policy(env_name, model, max_action, 5, True)
         print('Average Reward:', average_reward)
     else:
@@ -142,7 +147,9 @@ def main():
                 a = model.select_action(s, deterministic=False)  # a∈[-1,1]
                 act = Action_adapter(a, max_action)  # act∈[-max,max]
             # act 给环境， a 给环境
-            s_prime, r, done, _, _ = env.step(act)
+
+            s_prime, r, termi, trun, _ = env.step(act)
+            done = termi | trun
             dead = done
 
             replay_buffer.add(s, a, r, s_prime, dead)
