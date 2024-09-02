@@ -97,7 +97,7 @@ class SAC_Agent(object):
             hid_dim=128,
             a_lr=3e-4,
             c_lr=3e-4,
-            batch_size=128,
+            batch_size=256,
             alpha=0.2,
             adaptive_alpha=True
     ):
