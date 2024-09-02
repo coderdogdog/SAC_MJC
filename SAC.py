@@ -11,15 +11,17 @@ from ReplayBuffer import device
 class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, hid_dim):
         super(Actor, self).__init__()
-        # self.a_net = nn.Sequential(nn.Linear(state_dim, hid_dim),
-        #                            nn.ReLU(),
-        #                            nn.Linear(hid_dim, hid_dim),
-        #                            nn.ReLU())
         self.a_net = nn.Sequential(nn.Linear(state_dim, hid_dim),
-                                   nn.Linear(hid_dim, hid_dim), nn.ReLU(),
-                                   nn.Linear(hid_dim, 64), nn.ReLU())
-        self.mu_layer = nn.Linear(64, action_dim)
-        self.log_std_layer = nn.Linear(64, action_dim)
+                                   nn.ReLU(),
+                                   nn.Linear(hid_dim, hid_dim),
+                                   nn.ReLU())
+
+        # self.a_net = nn.Sequential(nn.Linear(state_dim, hid_dim),
+        #                            nn.Linear(hid_dim, hid_dim), nn.ReLU(),
+        #                            nn.Linear(hid_dim, 64), nn.ReLU())
+
+        self.mu_layer = nn.Linear(hid_dim, action_dim)
+        self.log_std_layer = nn.Linear(hid_dim, action_dim)
 
         self.LOG_STD_MAX = 2
         self.LOG_STD_MIN = -20
@@ -62,21 +64,22 @@ class Q_Critic(nn.Module):
     def __init__(self, state_dim, action_dim, hid_dim):
         super(Q_Critic, self).__init__()
 
-        # self.q_net1 = nn.Sequential(nn.Linear(state_dim + action_dim, hid_dim), nn.ReLU(),
-        #                             nn.Linear(hid_dim, hid_dim), nn.ReLU(),
-        #                             nn.Linear(hid_dim, 1), nn.Identity())
-        # self.q_net2 = nn.Sequential(nn.Linear(state_dim + action_dim, hid_dim), nn.ReLU(),
-        #                             nn.Linear(hid_dim, hid_dim), nn.ReLU(),
-        #                             nn.Linear(hid_dim, 1), nn.Identity())
-        self.q_net1 = nn.Sequential(nn.Linear(state_dim + action_dim, hid_dim),
+        self.q_net1 = nn.Sequential(nn.Linear(state_dim + action_dim, hid_dim), nn.ReLU(),
                                     nn.Linear(hid_dim, hid_dim), nn.ReLU(),
-                                    nn.Linear(hid_dim, 64), nn.ReLU(),
-                                    nn.Linear(64, 1), nn.Identity())
+                                    nn.Linear(hid_dim, 1), nn.Identity())
+        self.q_net2 = nn.Sequential(nn.Linear(state_dim + action_dim, hid_dim), nn.ReLU(),
+                                    nn.Linear(hid_dim, hid_dim), nn.ReLU(),
+                                    nn.Linear(hid_dim, 1), nn.Identity())
 
-        self.q_net2 = nn.Sequential(nn.Linear(state_dim + action_dim, hid_dim),
-                                    nn.Linear(hid_dim, hid_dim), nn.ReLU(),
-                                    nn.Linear(hid_dim, 64), nn.ReLU(),
-                                    nn.Linear(64, 1), nn.Identity())
+        # self.q_net1 = nn.Sequential(nn.Linear(state_dim + action_dim, hid_dim),
+        #                             nn.Linear(hid_dim, hid_dim), nn.ReLU(),
+        #                             nn.Linear(hid_dim, 64), nn.ReLU(),
+        #                             nn.Linear(64, 1), nn.Identity())
+        #
+        # self.q_net2 = nn.Sequential(nn.Linear(state_dim + action_dim, hid_dim),
+        #                             nn.Linear(hid_dim, hid_dim), nn.ReLU(),
+        #                             nn.Linear(hid_dim, 64), nn.ReLU(),
+        #                             nn.Linear(64, 1), nn.Identity())
 
     def forward(self, state, action):
         sa = torch.cat([state, action], 1)
